@@ -627,6 +627,46 @@
     </message>
     <message>
         <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Measure</source>
+        <translation type="unfinished">Măsoară</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Measure on the model: distance, angle, circle</source>
+        <translation type="unfinished">Măsoară pe model: distanță, unghi, cerc</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Snap to corners and edges</source>
+        <translation type="unfinished">Prinde la colțuri și muchii</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Jumps to the nearest corner, the middle of an edge or a point on an edge of the model when the mouse is close to one.</source>
+        <translation type="unfinished">Sare la cel mai apropiat colț, la mijlocul unei muchii sau la un punct de pe o muchie a modelului când mouse-ul este aproape de unul.</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Dotted line</source>
+        <translation type="unfinished">Linie punctată</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Draws the measuring lines dotted.</source>
+        <translation type="unfinished">Desenează liniile de măsurare punctate.</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Clear</source>
+        <translation type="unfinished">Șterge</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Close</source>
+        <translation type="unfinished">Închide</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
         <source>Screenshot</source>
         <translation>Captură de ecran</translation>
     </message>
@@ -1060,6 +1100,56 @@
         <location filename="../src/printview3d/ui/main_window.py"></location>
         <source>Home: Iso view, fitted</source>
         <translation>Vedere inițială: Izo, încadrată</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Distance</source>
+        <translation type="unfinished">Distanță</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Angle</source>
+        <translation type="unfinished">Unghi</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Circle (diameter, radius)</source>
+        <translation type="unfinished">Cerc (diametru, rază)</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Click two points on the model.</source>
+        <translation type="unfinished">Fă clic pe două puncte de pe model.</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Click three points: one side, the corner, the other side.</source>
+        <translation type="unfinished">Fă clic pe trei puncte: o latură, colțul, cealaltă latură.</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Click three points on the edge of a circle or hole.</source>
+        <translation type="unfinished">Fă clic pe trei puncte de pe marginea unui cerc sau a unei găuri.</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Drag a point to move it, drag elsewhere to turn the view.</source>
+        <translation type="unfinished">Trage un punct ca să-l muți, trage în altă parte ca să rotești vederea.</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Diameter</source>
+        <translation type="unfinished">Diametru</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Sides</source>
+        <translation type="unfinished">Laturi</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/main_window.py"></location>
+        <source>Radius</source>
+        <translation type="unfinished">Rază</translation>
     </message>
     <message>
         <location filename="../src/printview3d/ui/main_window.py"></location>
@@ -2007,6 +2097,11 @@
         <location filename="../src/printview3d/ui/settings_dialog.py"></location>
         <source>Clip facing you on / off (models)</source>
         <translation type="unfinished">Tăiere dinspre tine pornit / oprit (modele)</translation>
+    </message>
+    <message>
+        <location filename="../src/printview3d/ui/settings_dialog.py"></location>
+        <source>Measure on / off (models)</source>
+        <translation type="unfinished">Măsurare pornită / oprită (modele)</translation>
     </message>
     <message>
         <location filename="../src/printview3d/ui/settings_dialog.py"></location>

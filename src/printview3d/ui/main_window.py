@@ -559,7 +559,10 @@ class MainWindow(QMainWindow):
         # Clip facing you: an upright cut that turns with the view; one cut at a time.
         self.act_clip_face = QAction(self, checkable=True, shortcut=QKeySequence("V"))
         self.act_clip_face.toggled.connect(self.set_clip_face_on)
-        for a in (self.act_wireframe, self.act_xray, self.act_clip, self.act_clip_face):
+        # Measure: distances, angles and circles on the model; a click places a point.
+        self.act_measure = QAction(self, checkable=True, shortcut=QKeySequence("M"))
+        self.act_measure.toggled.connect(self.set_measure_on)
+        for a in (self.act_wireframe, self.act_xray, self.act_clip, self.act_clip_face, self.act_measure):
             self.addAction(a)                   # the shortcuts work wherever the focus is
         self.view_menu = QMenu(self)
         self.view_menu.addAction(self.act_wireframe)
@@ -573,6 +576,25 @@ class MainWindow(QMainWindow):
         self.view_btn.setMenu(self.view_menu)
         self.view_btn.setPopupMode(QToolButton.InstantPopup)
         tb.addWidget(self.view_btn)
+        # The Measure button, next to View: a click turns Measure on / off (M); its arrow picks
+        # what to measure - a distance, an angle or a circle (its diameter and radius).
+        self.measure_menu = QMenu(self)
+        self.measure_group = QActionGroup(self)
+        self.measure_actions = {}
+        for kind in ("distance", "angle", "circle"):
+            a = QAction(self, checkable=True)
+            a.triggered.connect(lambda _=False, k=kind: self.choose_measure_mode(k))
+            self.measure_group.addAction(a)
+            self.measure_menu.addAction(a)
+            self.measure_actions[kind] = a
+        self.measure_actions[self._measure_mode_setting()].setChecked(True)
+        self.measure_btn = QToolButton()
+        self.measure_btn.setObjectName("viewButton")
+        self.measure_btn.setToolButtonStyle(Qt.ToolButtonTextOnly)
+        self.measure_btn.setDefaultAction(self.act_measure)
+        self.measure_btn.setMenu(self.measure_menu)
+        self.measure_btn.setPopupMode(QToolButton.MenuButtonPopup)
+        tb.addWidget(self.measure_btn)
 
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
@@ -743,6 +765,13 @@ class MainWindow(QMainWindow):
         self.view_cube.set_visible(bool(self.settings.get("show_view_cube", True)))
         self.controls.cube = self.view_cube
         self.controls.on_cube_view = self._cube_view
+        from .measure import MeasureTool
+        self.measure = MeasureTool(self.plotter, self.scene, self._update_measure_panel,
+                                   self.controls.request_render)
+        self.measure.set_snap(bool(self.settings.get("measure_snap", True)))
+        self.measure.set_dotted(bool(self.settings.get("measure_dotted", False)))
+        self.measure.set_mode(self._measure_mode_setting())
+        self.controls.measure = self.measure
         self.view_cube.set_tooltips(self._cube_tooltips())
         self._update_view_buttons()
         # The 3D view, or (FreeCAD file without FreeCAD) a large preview picture.
@@ -836,6 +865,38 @@ class MainWindow(QMainWindow):
         off_row.addWidget(self.clip_off_btn)
         cl.addLayout(off_row)
         L.addWidget(self.clip_box)
+
+        # View -> Measure: the distance between two points on the model.
+        self.measure_box = QGroupBox()
+        ml = QVBoxLayout(self.measure_box)
+        self.measure_info = QLabel()              # the distance
+        self.measure_info.setTextFormat(Qt.RichText)
+        ml.addWidget(self.measure_info)
+        self.measure_delta = QLabel()             # ΔX / ΔY / ΔZ
+        ml.addWidget(self.measure_delta)
+        self.measure_hint = QLabel()
+        self.measure_hint.setObjectName("muted")
+        self.measure_hint.setWordWrap(True)
+        ml.addWidget(self.measure_hint)
+        self.measure_snap_cb = QCheckBox()
+        self.measure_snap_cb.setChecked(bool(self.settings.get("measure_snap", True)))
+        self.measure_snap_cb.toggled.connect(self.set_measure_snap)
+        ml.addWidget(self.measure_snap_cb)
+        self.measure_dotted_cb = QCheckBox()
+        self.measure_dotted_cb.setChecked(bool(self.settings.get("measure_dotted", False)))
+        self.measure_dotted_cb.toggled.connect(self.set_measure_dotted)
+        ml.addWidget(self.measure_dotted_cb)
+        mrow = QHBoxLayout()
+        self.measure_clear_btn = QPushButton()
+        self.measure_clear_btn.clicked.connect(self._measure_clear)
+        self.measure_close_btn = QPushButton()
+        self.measure_close_btn.clicked.connect(lambda: self.act_measure.setChecked(False))
+        mrow.addStretch(1)
+        mrow.addWidget(self.measure_clear_btn)
+        mrow.addWidget(self.measure_close_btn)
+        ml.addLayout(mrow)
+        self.measure_box.hide()
+        L.addWidget(self.measure_box)
 
         # Objects above Details: the object checkboxes are something you use, the details only
         # something you read, and a long description no longer pushes them off the screen (#62).
@@ -988,6 +1049,18 @@ class MainWindow(QMainWindow):
         self.clip_plane_cb.setText(tr("Show the cutting plane"))
         self.clip_plane_cb.setToolTip(tr("Shows where the cut is, as a faint sheet the size of the model."))
         self.clip_off_btn.setText(tr("Turn off"))
+        self.act_measure.setText(tr("Measure"))
+        self.act_measure.setToolTip(tr("Measure on the model: distance, angle, circle") + " (M)")
+        for kind, a in self.measure_actions.items():
+            a.setText(self._measure_mode_label(kind))
+        self.measure_snap_cb.setText(tr("Snap to corners and edges"))
+        self.measure_snap_cb.setToolTip(tr("Jumps to the nearest corner, the middle of an edge or a point on an "
+                                           "edge of the model when the mouse is close to one."))
+        self.measure_dotted_cb.setText(tr("Dotted line"))
+        self.measure_dotted_cb.setToolTip(tr("Draws the measuring lines dotted."))
+        self.measure_clear_btn.setText(tr("Clear"))
+        self.measure_close_btn.setText(tr("Close"))
+        self._update_measure_panel()
         self._update_clip_label()
         self._mark_plate_mode()
         self.act_screenshot.setText(tr("Screenshot"))
@@ -2016,9 +2089,16 @@ class MainWindow(QMainWindow):
     def _update_view_menu(self):
         """After a file opens or closes: the View options on or off for it, the clip box with it."""
         ok = self._view_options_apply()
-        for a in (self.act_wireframe, self.act_xray, self.act_clip, self.act_clip_face):
+        for a in (self.act_wireframe, self.act_xray, self.act_clip, self.act_clip_face, self.act_measure,
+                  *self.measure_actions.values()):
             a.setEnabled(ok)
         self.view_btn.setEnabled(ok)
+        if not hasattr(self, "measure"):
+            pass                                         # still being built
+        elif not ok and self.act_measure.isChecked():
+            self.act_measure.setChecked(False)           # nothing to measure: off
+        elif ok and self.measure.active and self.measure.refresh_model():
+            self._update_measure_panel()                 # another model: the old points are gone
         self.clip_box.setVisible(ok and self._clip_mode() is not None)
         if ok and self._clip_mode() is not None:
             self._on_clip_changed(self.clip_slider.value(), render=False)
@@ -2060,6 +2140,91 @@ class MainWindow(QMainWindow):
         self.scene.set_plane_strength(strength)
         if self.stack.currentIndex() == 1:
             self.plotter.render()
+
+    # ------------------------------------------------------------ measure
+    def _measure_mode_setting(self) -> str:
+        mode = self.settings.get("measure_mode", "distance")
+        return mode if mode in ("distance", "angle", "circle") else "distance"
+
+    @staticmethod
+    def _measure_mode_label(kind: str) -> str:
+        return {"distance": tr("Distance"), "angle": tr("Angle"), "circle": tr("Circle (diameter, radius)")}[kind]
+
+    def set_measure_on(self, on: bool):
+        """The Measure button (M): a click on the model places a point (instead of setting the
+        rotation centre); the side panel shows the value."""
+        on = bool(on) and self._view_options_apply()
+        if on == self.measure.active:
+            return
+        if on:
+            self.measure.start()
+        else:
+            self.measure.stop()
+        self.measure_box.setVisible(on)
+        try:
+            if on:
+                self.plotter.interactor.setCursor(Qt.CrossCursor)
+            else:
+                self.plotter.interactor.unsetCursor()
+        except Exception:   # noqa: BLE001
+            pass
+        self._update_measure_panel()
+        if self.stack.currentIndex() == 1:
+            self.plotter.render()
+
+    def choose_measure_mode(self, kind: str):
+        """The Measure button's menu: a distance, an angle or a circle. Turns Measure on."""
+        self.settings.set("measure_mode", kind)
+        self.measure_actions[kind].setChecked(True)
+        self.measure.set_mode(kind)
+        if not self.act_measure.isChecked() and self.act_measure.isEnabled():
+            self.act_measure.setChecked(True)
+        self._update_measure_panel()
+
+    def set_measure_snap(self, on: bool):
+        self.settings.set("measure_snap", bool(on))
+        self.measure.set_snap(on)
+
+    def set_measure_dotted(self, on: bool):
+        self.settings.set("measure_dotted", bool(on))
+        self.measure.set_dotted(on)
+
+    def _measure_clear(self):
+        self.measure.clear()
+
+    def _update_measure_panel(self):
+        """The title, the hint and the value of the measurement you are on (a dash before there
+        is one): distance with ΔX / ΔY / ΔZ, angle with its sides, circle with diameter and radius."""
+        if not hasattr(self, "measure_info") or not hasattr(self, "measure"):
+            return
+        kind = self.measure.mode
+        self.measure_box.setTitle(tr("Measure") + " – " + self._measure_mode_label(kind))
+        self.measure_hint.setText({
+            "distance": tr("Click two points on the model."),
+            "angle": tr("Click three points: one side, the corner, the other side."),
+            "circle": tr("Click three points on the edge of a circle or hole."),
+        }[kind] + " " + tr("Drag a point to move it, drag elsewhere to turn the view."))
+        self.measure_clear_btn.setEnabled(self.measure.has_items)
+        v = self.measure.current_values() if self.measure.active else None
+        if v is None:
+            head = {"distance": tr("Distance"), "angle": tr("Angle"), "circle": tr("Diameter")}[kind]
+            self.measure_info.setText(ltr(head + ": –"))
+            self.measure_delta.setText("")
+            return
+
+        def signed(x: float) -> str:
+            return ("+" if x > 0.005 else ("−" if x < -0.005 else "")) + num(abs(x), 2)
+
+        if v["kind"] == "distance":
+            self.measure_info.setText(ltr("<b>" + tr("Distance") + f": {num(v['distance'], 2)} mm</b>"))
+            self.measure_delta.setText(ltr(f"ΔX {signed(v['dx'])}   ΔY {signed(v['dy'])}   "
+                                           f"ΔZ {signed(v['dz'])} mm"))
+        elif v["kind"] == "angle":
+            self.measure_info.setText(ltr("<b>" + tr("Angle") + f": {num(v['angle'], 1)}°</b>"))
+            self.measure_delta.setText(ltr(tr("Sides") + f": {num(v['len_a'], 2)} / {num(v['len_b'], 2)} mm"))
+        else:
+            self.measure_info.setText(ltr("<b>" + tr("Diameter") + f": {num(v['diameter'], 2)} mm</b>"))
+            self.measure_delta.setText(ltr(tr("Radius") + f": {num(v['radius'], 2)} mm"))
 
     def _clip_mode(self) -> Optional[str]:
         """"top" (Clip from the top), "face" (Clip facing you) or None."""

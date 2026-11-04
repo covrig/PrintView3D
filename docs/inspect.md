@@ -58,6 +58,22 @@ whole model is in **Details**. Untick an object to hide it.
 
 ![The Objects list with each object's size](assets/inside/objects.png)
 
+## Measure
+
+The **Measure** button next to **View** (or <kbd>M</kbd>) measures on the model. Its small arrow
+chooses what to measure:
+
+- **Distance**: click two points. The line follows the mouse with the distance written next to it;
+  the side panel adds ΔX, ΔY and ΔZ, handy for "how tall from here to there".
+- **Angle**: click a point on one side, the corner, then a point on the other side.
+- **Circle**: click three points on the edge of a circle or hole to read its diameter and radius.
+
+A click places a point, a drag still turns the view, so you can turn the model between points.
+Finished measurements stay on screen and the next click starts another; **Clear** removes them all.
+Drag a placed point to move it. **Snap to corners and edges** (on by default) jumps to the nearest
+corner, the middle of an edge or a point on an edge. **Dotted line** draws the lines dotted. Values that
+would overlap, such as concentric circles, are stacked above each other.
+
 ## Keys
 
 | Key | |
@@ -66,6 +82,7 @@ whole model is in **Details**. Untick an object to hide it.
 | <kbd>X</kbd> | X-ray on / off |
 | <kbd>C</kbd> | Clip from the top on / off |
 | <kbd>V</kbd> | Clip facing you on / off |
+| <kbd>M</kbd> | Measure on / off |
 
 The options stay on when you open the next model.
 

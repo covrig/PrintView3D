@@ -66,6 +66,7 @@ def test_menu_and_shortcuts(window):
     actions = [w.act_wireframe, w.act_xray, w.act_clip, w.act_clip_face]
     assert [a for a in w.view_menu.actions() if not a.isSeparator()] == actions
     assert [a.shortcut().toString() for a in actions] == ["W", "X", "C", "V"]
+    assert w.act_measure in w.actions() and w.act_measure.shortcut().toString() == "M"
     for a in actions:
         assert a in w.actions()                           # work wherever the focus is
 
